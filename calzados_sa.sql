@@ -1,6 +1,6 @@
 CREATE DATABASE IF NOT EXISTS calzados_sa;
 USE calzados_sa;
-
+-- Integrantes: Julian Paglialunga, Genaro Francisco Oviedo, Mariano Antonelli, Ricardo Xavier Cardozo, Federico Andres Baumgartner.
 DROP TABLE IF EXISTS horario;
 DROP TABLE IF EXISTS vendido;
 DROP TABLE IF EXISTS provee;
