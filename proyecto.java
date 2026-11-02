@@ -1,22 +1,17 @@
-import java.io.*;
+
 import java.sql.*;
 import java.util.Scanner;
 
 public class proyecto {
-    // conección a una base de datos
-    private static final String driver = "com.mysql.cj.jdbc.Driver";
-    private static final String URL = "jdbc:mysql://localhost:3306/Proyecto base de datos 2026?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-    private static final String USER = "root";
-    private static final String PASSWORD = "ricardo@";
 
-    public static Connection connect() {
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Conexión establecida.");
-        } catch (SQLException e) {
-            System.err.println("Error al conectar: " + e.getMessage());
-        }
+    // conexion a una base de datos
+    private static final String driver = "com.mysql.cj.jdbc.Driver";
+    private static final String URL = "jdbc:mysql://localhost:3306/calzados_sa?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+    private static final String USER = "root";
+    private static final String PASSWORD = "julian123";
+
+    public static Connection connect() throws SQLException {
+        Connection connection = DriverManager.getConnection(URL, USER, PASSWORD);
         return connection;
     }
 
@@ -40,6 +35,7 @@ public class proyecto {
             ps.setString(3, DIRECCION);
             ps.setString(4, RAZON_SOCIAL);
             ps.executeUpdate();
+            System.out.println("Proveedor agregado correctamente.");
             conn.close();
         } catch (SQLException e) {
             System.out.println("ERROR al ingresar: " + e.getMessage());
@@ -48,44 +44,57 @@ public class proyecto {
     }
 
     public static int Eliminar(Scanner sc) {
-        // leo lo que ingresa la persona con el scanner
-        System.out.print("Ingrese el numero,\n de CUIT a eliminar: ");
-        System.out.print("nro: ");
+        System.out.print("Ingrese el CUIT a eliminar: ");
         String CUIT = sc.nextLine();
-        sc.nextLine();
-        // intento de eliminacion
-        try {
-            Connection conn = connect();
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM proveedor WHERE CUIT = ?");
+
+        try (Connection conn = connect(); PreparedStatement ps = conn.prepareStatement(
+                "DELETE FROM proveedor WHERE CUIT = ?")) {
+
             ps.setString(1, CUIT);
-            ps.executeUpdate();
-            conn.close();
+            int filas = ps.executeUpdate();
+
+            if (filas > 0) {
+                System.out.println("Proveedor eliminado correctamente.");
+            } else {
+                System.out.println("No existe un proveedor con ese CUIT.");
+            }
+
         } catch (SQLException e) {
-            System.out.println("ERROR al ingresar: " + e.getMessage());
+            System.out.println("ERROR al eliminar: " + e.getMessage());
         }
+
         return 0;
     }
 
     public static int Listar(Scanner sc) {
-        // leo lo que ingresa la persona con el scanner
-        System.out.print("Listado de Proveedores: \n");
+        System.out.print("Listado de Proveedores:\n");
+
         try {
             Connection conn = connect();
             PreparedStatement ps = conn.prepareStatement(
-                    "SELECT CUIT, TEL_FIJO, DIRECCION, RAZON_SOCIAL FROM proveedor = ?");
+                    "SELECT CUIT, TEL_FIJO, DIRECCION, RAZON_SOCIAL FROM proveedor"
+            );
+
             ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
-                System.out.printf("- CUIT: %d | Teléfono: %d | Dirección: %s | Razón Social: %s%n",
-                    rs.getInt("CUIT"),
-                    rs.getInt("TEL_FIJO"),
-                    rs.getString("DIRECCION"),
-                    rs.getString("RAZON_SOCIAL")
+                System.out.printf(
+                        "- CUIT: %s | Teléfono: %s | Dirección: %s | Razón Social: %s%n",
+                        rs.getString("CUIT"),
+                        rs.getString("TEL_FIJO"),
+                        rs.getString("DIRECCION"),
+                        rs.getString("RAZON_SOCIAL")
                 );
             }
+
+            rs.close();
+            ps.close();
             conn.close();
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return 0;
     }
 
@@ -112,11 +121,11 @@ public class proyecto {
         Scanner sc = new Scanner(System.in);
         while (selection > -1) {
             System.out.println(
-                    "\nQue desea realizar:\n" +
-                    "    1) Agregar un Proveedor (agregar).\n" +
-                    "    2) Eliminar un Proveedor (eliminar).\n" +
-                    "    3) Listar Proveedores (listar).\n" +
-                    "    4) Salir:"
+                    "\nQue desea realizar:\n"
+                    + "    1) Agregar un Proveedor (agregar).\n"
+                    + "    2) Eliminar un Proveedor (eliminar).\n"
+                    + "    3) Listar Proveedores (listar).\n"
+                    + "    4) Salir:"
             );
             String ingreso = sc.nextLine();
             selection = verificar(ingreso, sc);
